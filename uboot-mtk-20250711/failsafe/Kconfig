@@ -12,12 +12,12 @@ config WEBUI_FAILSAFE
 
 choice
 	prompt "Failsafe Web UI style"
-	default WEBUI_FAILSAFE_UI_NEW
+	default WEBUI_FAILSAFE_UI_BOOTSTRAP
 	depends on WEBUI_FAILSAFE
 	help
 	  Select which UI resources to embed for failsafe Web UI.
 
-config WEBUI_FAILSAFE_UI_NEW
+config WEBUI_FAILSAFE_UI_BOOTSTRAP
 	bool "New UI (fsdata)"
 
 config WEBUI_FAILSAFE_UI_MTK
@@ -31,7 +31,7 @@ endchoice
 config WEBUI_FAILSAFE_I18N
 	bool "Enable i18n dictionary (fsdata)"
 	default y
-	depends on WEBUI_FAILSAFE_UI_NEW
+	depends on WEBUI_FAILSAFE_UI_BOOTSTRAP
 	help
 	  Enable i18n dictionary resources for the new failsafe Web UI.
 	  When disabled, i18n.js will not be embedded or served.

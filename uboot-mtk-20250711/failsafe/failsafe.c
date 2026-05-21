@@ -1047,7 +1047,7 @@ int start_web_failsafe(void)
 	httpd_register_uri_handler(inst, "/env/reset", &env_reset_handler, NULL);
 	httpd_register_uri_handler(inst, "/env/restore", &env_restore_handler, NULL);
 #endif
-#ifdef CONFIG_WEBUI_FAILSAFE_UI_NEW
+#ifdef CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP
 	httpd_register_uri_handler(inst, "/favicon.svg", &picture_handler, NULL);
 	httpd_register_uri_handler(inst, "/settings.html", &html_handler, NULL);
 	httpd_register_uri_handler(inst, "/settings_js.js", &js_handler, NULL);

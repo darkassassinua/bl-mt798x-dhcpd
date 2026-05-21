@@ -30,6 +30,6 @@ obj-y += fs.o failsafe.o
 obj-$(CONFIG_WEBUI_FAILSAFE_CONSOLE) += failsafe_console.o
 obj-$(CONFIG_WEBUI_FAILSAFE_ENV) += failsafe_env.o
 obj-$(CONFIG_WEBUI_FAILSAFE_BACKUP) += failsafe_backup_flash.o
-obj-$(CONFIG_WEBUI_FAILSAFE_UI_NEW) += failsafe_theme.o
+obj-$(CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP) += failsafe_theme.o
 
 endif

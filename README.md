@@ -30,7 +30,7 @@ You can configure the features you need.
   - MTK_DHCPD_POOL_START_HOST default 100
   - MTK_DHCPD_POOL_SIZE default 101
 - Failsafe Web UI style:
-  - [x] WEBUI_FAILSAFE_UI_NEW
+  - [x] WEBUI_FAILSAFE_UI_BOOTSTRAP
     - [x] WEBUI_FAILSAFE_I18N
   - [ ] WEBUI_FAILSAFE_UI_GL
   - [ ] WEBUI_FAILSAFE_UI_MTK

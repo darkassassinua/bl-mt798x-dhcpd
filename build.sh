@@ -8,7 +8,7 @@ TOOLCHAIN_AARCH64=aarch64-linux-gnu-
 # Default selection
 VERSION=${VERSION:-2025}
 VARIANT=${VARIANT:-default}
-FSTHEME=${FSTHEME:-new}
+FSTHEME=${FSTHEME:-bootstrap}
 fixedparts=${FIXED_MTDPARTS:-1}
 multilayout=${MULTI_LAYOUT:-0}
 simg=${SIMG:-0}
@@ -295,8 +295,8 @@ if [ -n "$VARIANT" ]; then
 	echo "Build u-boot with variant: $VARIANT"
 	echo "CONFIG_WEBUI_FAILSAFE_BUILD_VARIANT=\"$(echo "$VARIANT" | tr '[:upper:]' '[:lower:]')\"" >> "$UBOOT_DIR/.config"
 fi
-if [ "$FSTHEME" = "new" ] || [ "$FSTHEME" = "NEW" ]; then
-	echo "Build u-boot with new fstheme!"
+if [ "$FSTHEME" = "bootstrap" ] || [ "$FSTHEME" = "Bootstrap" ]; then
+	echo "Build u-boot with bootstrap fstheme!"
 fi
 if [ "$FSTHEME" = "gl" ] || [ "$FSTHEME" = "GL" ]; then
 	echo "Build u-boot with gl fstheme!"
