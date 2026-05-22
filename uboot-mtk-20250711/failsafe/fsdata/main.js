@@ -148,6 +148,14 @@ const THEME_COLOR_ENV_KEY = "failsafe_theme_color";
 const THEME_COLOR_CACHE_KEY = "failsafe_theme_color_cache";
 const ACCENT_PRESETS = ["#2563eb", "#0ea5e9", "#14b8a6", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#a855f7"];
 const THEME_MODE_ENV_KEY = "failsafe_theme_mode";
+const THEME_DARK_VARIANT_ENV_KEY = "failsafe_theme_dark_variant";
+const THEME_DARK_VARIANT_CACHE_KEY = "failsafe_theme_dark_variant_cache";
+
+function normalizeDarkVariant(input) {
+    if (input == null) return "";
+    const value = String(input).trim().toLowerCase();
+    return value === "amoled" ? "amoled" : "";
+}
 
 const HEX3_RE = /^[0-9a-fA-F]{3}$/;
 const HEX6_RE = /^[0-9a-fA-F]{6}$/;
@@ -295,6 +303,60 @@ async function loadThemeMode() {
     } catch { /* ignore */ }
 
     if (mode) setTheme(mode, { persistEnv: false, persistLocal: true, silent: true });
+}
+
+function updateDarkVariantControl(variant) {
+    const select = document.getElementById("settings_dark_variant");
+    if (!select) return;
+    select.value = normalizeDarkVariant(variant);
+}
+
+function applyDarkVariant(variant, options = {}) {
+    const { persistLocal = true, silent = false } = options;
+    const normalized = normalizeDarkVariant(variant);
+
+    if (persistLocal) {
+        try {
+            if (normalized) localStorage.setItem(THEME_DARK_VARIANT_CACHE_KEY, normalized);
+            else localStorage.removeItem(THEME_DARK_VARIANT_CACHE_KEY);
+        } catch { /* ignore */ }
+    }
+
+    if (typeof window.__failsafeThemeApplyDarkVariant === "function") {
+        window.__failsafeThemeApplyDarkVariant(normalized, { silent });
+    } else {
+        const root = document.documentElement;
+        if (normalized) root.setAttribute("data-theme-dark", normalized);
+        else root.removeAttribute("data-theme-dark");
+    }
+
+    updateDarkVariantControl(normalized);
+}
+
+async function saveDarkVariant(variant) {
+    const normalized = normalizeDarkVariant(variant);
+    /* server expects "standard" or empty to clear; we send "standard" so the
+     * intent is explicit in transit, the backend turns it back into unset */
+    const wire = normalized || "standard";
+    try {
+        const formData = new FormData();
+        formData.append("dark_variant", wire);
+        await fetch("/theme/set", { method: "POST", body: formData });
+    } catch { /* network errors silently dropped */ }
+}
+
+async function loadDarkVariant() {
+    let variant = null;
+    try {
+        const response = await fetch("/theme/get", { method: "GET" });
+        if (response?.ok) {
+            const payload = await response.json();
+            variant = normalizeDarkVariant(payload?.dark_variant);
+        }
+    } catch { /* ignore */ }
+
+    /* always update UI even when env-side is empty (need to clear stale select) */
+    applyDarkVariant(variant ?? "", { persistLocal: true, silent: true });
 }
 
 function appendAccentControls(container) {
@@ -670,6 +732,7 @@ function appInit(pageName) {
     updateDocumentTitle();
     loadThemeColor();
     loadThemeMode();
+    loadDarkVariant();
     setTimeout(function () {
         document.body.classList.add("ready")
     }, 0);

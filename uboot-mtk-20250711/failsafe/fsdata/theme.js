@@ -23,6 +23,7 @@
     const STORAGE_KEYS = Object.freeze({
         theme: "theme",
         accent: "failsafe_theme_color_cache",
+        darkVariant: "failsafe_theme_dark_variant_cache",
     });
     const TRANSITION_DURATION_MS = 620;
     const HEX_SHORT = /^[0-9a-f]{3}$/i;
@@ -82,6 +83,22 @@
     };
 
     const getCachedAccent = () => normalizeHex(readStorage(STORAGE_KEYS.accent));
+
+    const normalizeDarkVariant = (input) => {
+        if (input == null) return "";
+        const s = String(input).trim().toLowerCase();
+        return s === "amoled" ? "amoled" : "";
+    };
+
+    /* The chrome bar color the OS reads from <meta name="theme-color">.
+     * Picked from accent first, then per-variant fallback. AMOLED gets pure
+     * black so the system UI blends with the page edge on OLED screens. */
+    const resolveMetaColor = (resolved, variant) => {
+        const accent = getCachedAccent();
+        if (accent) return accent;
+        if (resolved !== "dark") return "#eef2f8";
+        return variant === "amoled" ? "#000000" : "#070b16";
+    };
 
     /* ── Theme transition animation ──────────────────────────── */
     /*
@@ -149,7 +166,8 @@
                 root.removeAttribute("data-theme-auto");
             }
             root.setAttribute("data-theme", resolved);
-            applyThemeColorMeta(getCachedAccent() ?? (resolved === "dark" ? "#070b16" : "#eef2f8"));
+            applyThemeColorMeta(resolveMetaColor(resolved,
+                root.getAttribute("data-theme-dark") || ""));
         };
 
         if (silent || prefersReducedMotion) {
@@ -175,13 +193,46 @@
         }));
     };
 
+    /* ── Dark variant application ────────────────────────────── */
+    /*
+     * data-theme-dark is set independently of data-theme so the choice
+     * persists across auto/light/dark mode flips. CSS only acts on it when
+     * data-theme="dark" — see html[data-theme="dark"][data-theme-dark="amoled"]
+     * in style.css.
+     */
+    const applyDarkVariant = (root, variant, silent) => {
+        const v = normalizeDarkVariant(variant);
+
+        const setAttr = () => {
+            if (v) root.setAttribute("data-theme-dark", v);
+            else root.removeAttribute("data-theme-dark");
+            applyThemeColorMeta(resolveMetaColor(
+                root.getAttribute("data-theme") || "light", v));
+        };
+
+        if (silent || prefersReducedMotion) {
+            setAttr();
+            return;
+        }
+
+        /* pulse the same transition class used for mode flips so the palette
+         * shift interpolates instead of snapping */
+        root.__failsafeThemePulse?.();
+        requestAnimationFrame(() => requestAnimationFrame(setAttr));
+    };
+
     /* ── Bootstrap ───────────────────────────────────────────── */
     try {
         const root = document.documentElement;
         const cachedAccent = readStorage(STORAGE_KEYS.accent);
         const cachedTheme  = readStorage(STORAGE_KEYS.theme);
+        const cachedDarkVariant = readStorage(STORAGE_KEYS.darkVariant);
 
         setupTransition(root);
+
+        /* apply dark variant BEFORE mode so resolveMetaColor picks the right
+         * fallback on the very first paint */
+        applyDarkVariant(root, cachedDarkVariant ?? "", true);
 
         /* apply cached theme mode (silent — no transition on load) */
         applyThemeMode(root, cachedTheme ?? "auto", true);
@@ -189,6 +240,9 @@
         /* expose for main.js */
         window.__failsafeThemeApplyMode = (mode, opts) => {
             applyThemeMode(root, mode, !!opts?.silent);
+        };
+        window.__failsafeThemeApplyDarkVariant = (variant, opts) => {
+            applyDarkVariant(root, variant, !!opts?.silent);
         };
 
         /* apply cached accent color */

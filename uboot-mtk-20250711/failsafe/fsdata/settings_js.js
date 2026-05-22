@@ -102,6 +102,21 @@
         if (typeof applyI18n === "function") applyI18n(host);
     }
 
+    function bindDarkVariantControl() {
+        const select = document.getElementById("settings_dark_variant");
+        if (!select || select.dataset.bound === "1") return;
+        select.dataset.bound = "1";
+        select.addEventListener("change", () => {
+            const value = select.value || "";
+            if (typeof applyDarkVariant === "function") {
+                applyDarkVariant(value, { persistLocal: true });
+            }
+            if (typeof saveDarkVariant === "function") {
+                saveDarkVariant(value);
+            }
+        });
+    }
+
     async function refresh() {
         setStatus(t("env.status.loading", "Loading..."));
         try {
@@ -185,6 +200,7 @@
 
     function init() {
         buildAccentControls();
+        bindDarkVariantControl();
         populateMtdLayouts();
         refresh();
     }

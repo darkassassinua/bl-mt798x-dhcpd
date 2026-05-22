@@ -213,6 +213,41 @@ html[data-theme="dark"] .color-swatch:hover {
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.12);
 }
 
+/* ── AMOLED variant (pure black, dark only) ────────────────────── */
+/*
+ * data-theme-dark is set independently of data-theme so the choice
+ * survives auto/light/dark flips; we only paint pure-black when both
+ * conditions hold. Panels stay slightly above #000 to keep card
+ * boundaries readable on OLED screens without bleeding.
+ */
+html[data-theme="dark"][data-theme-dark="amoled"] {
+    --bg:             #000000;
+    --panel:          #0a0a0a;
+    --panel-2:        #111111;
+    --panel-rgb:      10, 10, 10;
+    --panel-strong:   #161616;
+    --border:         rgba(255, 255, 255, 0.08);
+    --border-strong:  rgba(255, 255, 255, 0.16);
+    --shadow-sm:      0 1px 2px rgba(0, 0, 0, 0.50), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+    --shadow:
+        0 1px 2px rgba(0, 0, 0, 0.40),
+        0 10px 28px rgba(0, 0, 0, 0.55),
+        0 28px 64px rgba(0, 0, 0, 0.65),
+        0 1px 0 rgba(255, 255, 255, 0.03) inset;
+    --shadow-lg:
+        0 2px 4px rgba(0, 0, 0, 0.45),
+        0 14px 36px rgba(0, 0, 0, 0.65),
+        0 36px 80px rgba(0, 0, 0, 0.75);
+    --surface-tint:   rgba(var(--primary-rgb), 0.08);
+    --inset-highlight: rgba(255, 255, 255, 0.04);
+    --hairline:       linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.10), transparent);
+}
+
+/* strip body background gradients on AMOLED so off pixels stay off */
+html[data-theme="dark"][data-theme-dark="amoled"] body {
+    background: var(--bg);
+}
+
 /* ── Theme transition (no layout shift) ────────────────────────── */
 /*
  * The transition class is armed BEFORE data-theme is flipped (see theme.js)
