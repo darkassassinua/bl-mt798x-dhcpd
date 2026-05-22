@@ -518,6 +518,13 @@ function ensureSidebar() {
     // Branding
     const brandContainer = document.createElement("div");
     brandContainer.className = "sidebar-brand";
+    const brandLogo = document.createElement("img");
+    brandLogo.className = "logo";
+    brandLogo.src = "/favicon.svg";
+    brandLogo.alt = "";
+    brandLogo.width = 28;
+    brandLogo.height = 28;
+    brandContainer.appendChild(brandLogo);
     const brandTitle = document.createElement("div");
     brandTitle.className = "title";
     brandTitle.setAttribute("data-i18n", "app.name");
