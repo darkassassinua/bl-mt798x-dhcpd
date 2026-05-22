@@ -770,7 +770,7 @@ h1 {
     font-size: 1.62rem;
     line-height: 1.25;
     letter-spacing: -0.02em;
-    margin-top: 12px;
+    margin-top: 16px;
     border-bottom: 0;
     padding-bottom: 0;
     color: var(--text);
@@ -1936,13 +1936,13 @@ body[data-page="initramfs"] .card-head {
         0 1px 0 var(--inset-highlight) inset;
 }
 
-/* Hero alignment for non-upload functional pages */
+/* Hero alignment for non-upload functional pages — centered above h1 */
 body[data-page="backup"] .upload-hero,
 body[data-page="console"] .upload-hero,
 body[data-page="env"] .upload-hero,
 body[data-page="flash"] .upload-hero,
 body[data-page="settings"] .upload-hero {
-    margin: 2px 0 10px;
+    margin: 2px auto 10px;
 }
 
 /* ── Responsive ────────────────────────────────────────────────── */

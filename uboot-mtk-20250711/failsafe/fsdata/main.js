@@ -1152,8 +1152,6 @@ function upload(formFieldName) {
             const upgradeElement = document.getElementById("upgrade");
             if (upgradeElement) upgradeElement.style.display = "block";
 
-            const uploadHero = document.getElementById("upload_hero");
-            if (uploadHero) uploadHero.style.display = "none";
         },
         progress: (progressEvent) => {
             if (!progressEvent.total) return;
