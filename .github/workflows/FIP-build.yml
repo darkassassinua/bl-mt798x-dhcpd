@@ -48,6 +48,7 @@ on:
           - bootstrap
           - gl
           - mtk
+          - darkassassin
       EXTRA_OPTION:
         description: 'Extra option (default=MULTI_LAYOUT off+FIXED_MTDPARTS on, multi_layout=both on, dis_fixed_mtdparts=both off)'
         required: false
@@ -148,9 +149,9 @@ jobs:
 
         # Validate FSTHEME
         case "$FSTHEME_IN" in
-          bootstrap|gl|mtk) ;;
+          bootstrap|gl|mtk|darkassassin) ;;
           *)
-            echo "Error: invalid FSTHEME: '$FSTHEME_IN' (expected bootstrap/gl/mtk)" >&2
+            echo "Error: invalid FSTHEME: '$FSTHEME_IN' (expected bootstrap/gl/mtk/darkassassin)" >&2
             exit 1
             ;;
         esac
@@ -349,10 +350,12 @@ jobs:
         config_apply "CONFIG_FSTHEME_BOOTSTRAP" "n"
         config_apply "CONFIG_FSTHEME_GL" "n"
         config_apply "CONFIG_FSTHEME_MTK" "n"
+        config_apply "CONFIG_FSTHEME_DARKASSASSIN" "n"
         case "$CONFIG_FSTHEME" in
           bootstrap) config_apply "CONFIG_FSTHEME_BOOTSTRAP" "y" ;;
           gl) config_apply "CONFIG_FSTHEME_GL" "y" ;;
           mtk) config_apply "CONFIG_FSTHEME_MTK" "y" ;;
+          darkassassin) config_apply "CONFIG_FSTHEME_DARKASSASSIN" "y" ;;
         esac
 
         # EXTRA_OPTION: determines MULTI_LAYOUT and FIXED_MTDPARTS

@@ -26,12 +26,15 @@ config WEBUI_FAILSAFE_UI_MTK
 config WEBUI_FAILSAFE_UI_GL
 	bool "GL UI (fsdata_gl)"
 
+config WEBUI_FAILSAFE_UI_DARKASSASSIN
+	bool "DarkAssassin UI (fsdata_darkassassin)"
+
 endchoice
 
 config WEBUI_FAILSAFE_I18N
 	bool "Enable i18n dictionary (fsdata)"
 	default y
-	depends on WEBUI_FAILSAFE_UI_BOOTSTRAP
+	depends on WEBUI_FAILSAFE_UI_BOOTSTRAP || WEBUI_FAILSAFE_UI_DARKASSASSIN
 	help
 	  Enable i18n dictionary resources for the new failsafe Web UI.
 	  When disabled, i18n.js will not be embedded or served.

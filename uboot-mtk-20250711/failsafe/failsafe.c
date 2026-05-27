@@ -891,12 +891,58 @@ static void result_handler(enum httpd_uri_handler_status status,
 	}
 }
 
+static const char *select_css_file(const char *uri)
+{
+	static const char *allowed[] = {
+		"style.css",
+		"theme.css",
+		NULL
+	};
+	const char *basename;
+	const char *slash_ptr;
+	size_t basename_len;
+	int allowed_index;
+
+	if (!uri || !uri[0])
+		return "style.css";
+
+	slash_ptr = strrchr(uri, '/');
+	basename = slash_ptr ? slash_ptr + 1 : uri;
+
+	/* strip query/hash if present */
+	{
+		const char *query_ptr = strchr(basename, '?');
+		const char *hash_ptr = strchr(basename, '#');
+		const char *end_ptr = basename + strlen(basename);
+
+		if (query_ptr && query_ptr < end_ptr)
+			end_ptr = query_ptr;
+		if (hash_ptr && hash_ptr < end_ptr)
+			end_ptr = hash_ptr;
+
+		basename_len = end_ptr - basename;
+	}
+	if (basename_len == 0)
+		return "style.css";
+
+	for (allowed_index = 0; allowed[allowed_index]; allowed_index++) {
+		if (strlen(allowed[allowed_index]) == basename_len &&
+			strncmp(allowed[allowed_index], basename, basename_len) == 0)
+			return allowed[allowed_index];
+	}
+
+	return "style.css";
+}
+
 static void style_handler(enum httpd_uri_handler_status status,
 			  struct httpd_request *request,
 			  struct httpd_response *response)
 {
 	if (status == HTTP_CB_NEW) {
-		if (output_plain_file(response, "style.css")) {
+		const char *uri = request && request->urih ? request->urih->uri : NULL;
+		const char *file = select_css_file(uri);
+
+		if (output_plain_file(response, file)) {
 			not_found_handler(status, request, response);
 			return;
 		}
@@ -1135,6 +1181,7 @@ int start_web_failsafe(void)
 	httpd_register_uri_handler(inst, "/main.js", &js_handler, NULL);
 	httpd_register_uri_handler(inst, "/result", &result_handler, NULL);
 	httpd_register_uri_handler(inst, "/style.css", &style_handler, NULL);
+	httpd_register_uri_handler(inst, "/theme.css", &style_handler, NULL);
 	httpd_register_uri_handler(inst, "/uboot.html", &html_handler, NULL);
 	httpd_register_uri_handler(inst, "/upload", &upload_handler, NULL);
 	httpd_register_uri_handler(inst, "/version", &version_handler, NULL);
@@ -1170,7 +1217,7 @@ int start_web_failsafe(void)
 	httpd_register_uri_handler(inst, "/env/restore", &env_restore_handler, NULL);
 	httpd_register_uri_handler(inst, "/env/size", &env_size_handler, NULL);
 #endif
-#ifdef CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP
+#if defined(CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP) || defined(CONFIG_WEBUI_FAILSAFE_UI_DARKASSASSIN)
 	httpd_register_uri_handler(inst, "/favicon.svg", &picture_handler, NULL);
 	httpd_register_uri_handler(inst, "/settings.html", &html_handler, NULL);
 	httpd_register_uri_handler(inst, "/settings_js.js", &js_handler, NULL);
