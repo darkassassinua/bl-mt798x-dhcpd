@@ -26,6 +26,7 @@ function normalizeLang(input) {
     const lowerCaseLanguage = String(input).toLowerCase();
     if (lowerCaseLanguage.indexOf("zh") === 0) return "zh-cn";
     if (lowerCaseLanguage.indexOf("ru") === 0) return "ru";
+    if (lowerCaseLanguage.indexOf("uk") === 0) return "uk";
     return "en";
 }
 
@@ -563,7 +564,7 @@ function ensureSidebar() {
 
     const languageSelect = document.createElement("select");
     languageSelect.id = "lang_select";
-    languageSelect.innerHTML = '<option value="en">English</option><option value="zh-cn">简体中文</option><option value="ru">Русский</option>';
+    languageSelect.innerHTML = '<option value="en">English</option><option value="zh-cn">简体中文</option><option value="ru">Русский</option><option value="uk">Українська</option>';
     languageSelect.value = APP_STATE.lang;
     languageSelect.onchange = function () { setLang(this.value); };
     languageRow.appendChild(languageSelect);
