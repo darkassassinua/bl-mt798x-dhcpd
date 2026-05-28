@@ -2,6 +2,7 @@
 #
 # Скрипт для безопасной прошивки загрузчика (BL2 и FIP) на устройствах MediaTek MT798x
 # Разработан специально для comfast_cf-wr632ax и аналогичных плат.
+# Автоматически загружает последнюю версию сборки прямо с GitHub!
 #
 
 set -e
@@ -41,7 +42,6 @@ find_mtd_partition() {
     local name="$1"
     local dev=$(grep -i "\"$name\"" /proc/mtd | cut -d':' -f1)
     if [ -z "$dev" ]; then
-        # Попробуем альтернативные имена (например, preloader вместо bl2)
         if [ "$name" = "bl2" ]; then
             dev=$(grep -i '"preloader"' /proc/mtd | cut -d':' -f1)
         fi
@@ -53,11 +53,10 @@ find_mtd_partition() {
 MTD_BL2=$(find_mtd_partition "bl2")
 MTD_FIP=$(find_mtd_partition "fip")
 
-# Вывод найденных разделов
 if [ -n "$MTD_BL2" ]; then
     info "Найден раздел BL2 (Preloader): \033[1m$MTD_BL2\033[0m"
 else
-    warn "Раздел BL2 не найден в /proc/mtd! Возможно, это SPI-NOR устройство с фиксированной таблицей."
+    warn "Раздел BL2 не найден. Скрипт обновит только FIP (U-Boot)."
 fi
 
 if [ -n "$MTD_FIP" ]; then
@@ -65,6 +64,58 @@ if [ -n "$MTD_FIP" ]; then
 else
     error "Не удалось найти раздел FIP (U-Boot) в /proc/mtd! Прошивка невозможна."
 fi
+
+# Интерактивное скачивание с GitHub
+echo ""
+info "Хотите загрузить последнюю версию загрузчика напрямую из GitHub Releases?"
+echo -n "Скачать свежую сборку? (y/N): "
+read dl_confirm < /dev/tty
+case "$dl_confirm" in
+    y|Y|yes|YES)
+        info "Проверяем подключение к интернету и запрашиваем список релизов..."
+        
+        # Получаем JSON последнего релиза
+        GITHUB_API="https://api.github.com/repos/DarkAssassinUA/bl-mt798x-dhcpd/releases/latest"
+        json=""
+        if command -v curl >/dev/null 2>&1; then
+            json=$(curl -s -L "$GITHUB_API")
+        else
+            json=$(wget -qO- --no-check-certificate "$GITHUB_API" || true)
+        fi
+        
+        if [ -z "$json" ] || echo "$json" | grep -q "message.*Not Found"; then
+            error "Не удалось получить список релизов с GitHub. Проверьте настройки сети на роутере."
+        fi
+        
+        # Фильтруем ссылки для нашего комфаста
+        urls=$(echo "$json" | grep -oE 'https://github.com/[^"]+' | grep -E '\.(bin|img)$' | grep -i 'cf-wr632ax' || true)
+        
+        if [ -z "$urls" ]; then
+            error "Не найдены скомпилированные файлы для Comfast CF-WR632AX в последнем релизе!"
+        fi
+        
+        info "Найдены подходящие файлы для скачивания:"
+        for url in $urls; do
+            filename=$(basename "$url")
+            echo "  - $filename"
+        done
+        
+        # Скачиваем файлы
+        for url in $urls; do
+            filename=$(basename "$url")
+            info "Скачиваем \033[1m$filename\033[0m..."
+            if command -v curl >/dev/null 2>&1; then
+                curl -L -o "$filename" "$url"
+            else
+                wget -O "$filename" --no-check-certificate "$url"
+            fi
+            success "Файл $filename успешно загружен!"
+        done
+        ;;
+    *)
+        info "Используем уже имеющиеся локальные файлы в текущей директории."
+        ;;
+esac
 
 # Функция интерактивного выбора файлов
 select_file() {
@@ -77,7 +128,6 @@ select_file() {
         return 1
     fi
     
-    # Если найден ровно один файл, автовыбор
     local count=$(echo "$files" | wc -w)
     if [ "$count" -eq 1 ]; then
         echo "$files"
@@ -104,9 +154,12 @@ select_file() {
 # Выбор файлов прошивки
 BL2_FILE=""
 if [ -n "$MTD_BL2" ]; then
-    BL2_FILE=$(select_file "*bl2*.bin" "Найдены следующие файлы для BL2:")
+    BL2_FILE=$(select_file "*bl2*.img" "Найдены следующие файлы для BL2:")
     if [ -z "$BL2_FILE" ]; then
-        warn "Файл BL2 (*bl2*.bin) не найден в текущей папке. Будет прошит только FIP."
+        BL2_FILE=$(select_file "*bl2*.bin" "Найдены следующие файлы для BL2:")
+    fi
+    if [ -z "$BL2_FILE" ]; then
+        warn "Файл BL2 не найден в текущей папке. Будет прошит только FIP."
     else
         info "Выбран файл BL2: \033[1m$BL2_FILE\033[0m"
     fi
@@ -137,7 +190,7 @@ case "$confirm" in
         ;;
 esac
 
-# 1. Прошивка BL2 (если применимо)
+# 1. Прошивка BL2
 if [ -n "$MTD_BL2" ] && [ -n "$BL2_FILE" ]; then
     info "Вычисляем контрольную сумму BL2..."
     md5sum "$BL2_FILE"
