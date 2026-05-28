@@ -37,6 +37,36 @@ if [ ! -f /proc/mtd ]; then
     error "Этот скрипт должен быть запущен непосредственно на роутере под управлением OpenWrt!"
 fi
 
+# --- СНЯТИЕ ЗАЩИТЫ ОТ ЗАПИСИ В САМОМ НАЧАЛЕ ---
+info "Устанавливаем kmod-mtd-rw..."
+if command -v apk >/dev/null 2>&1; then
+    apk update || true
+    apk add kmod-mtd-rw || true
+elif command -v opkg >/dev/null 2>&1; then
+    opkg update || true
+    opkg install kmod-mtd-rw || true
+fi
+
+info "Загружаем модуль разблокировки разделов (mtd-rw)..."
+insmod mtd-rw i_want_a_brick=1 2>/dev/null || \
+insmod mtd_rw i_want_a_brick=1 2>/dev/null || \
+insmod "/lib/modules/$(uname -r)/mtd-rw.ko" i_want_a_brick=1 2>/dev/null || \
+insmod "/lib/modules/$(uname -r)/mtd_rw.ko" i_want_a_brick=1 2>/dev/null || \
+modprobe mtd-rw i_want_a_brick=1 2>/dev/null || \
+modprobe mtd_rw i_want_a_brick=1 2>/dev/null || true
+
+if lsmod | grep -qE "mtd_rw|mtd-rw"; then
+    success "Драйвер разблокировки разделов (mtd-rw) успешно загружен!"
+else
+    warn "Не удалось загрузить mtd-rw. При ошибке записи выполните вручную:"
+    if command -v apk >/dev/null 2>&1; then
+        echo -e "  \033[1;32mapk update && apk add kmod-mtd-rw && insmod mtd-rw i_want_a_brick=1\033[0m"
+    else
+        echo -e "  \033[1;32mopkg update && opkg install kmod-mtd-rw && insmod mtd-rw i_want_a_brick=1\033[0m"
+    fi
+fi
+# ------------------------------------------------------
+
 # Поиск разделов mtd в /proc/mtd (возвращает mtdX)
 find_mtd_partition() {
     local name="$1"
@@ -60,58 +90,6 @@ if [ -n "$MTD_FIP" ] && [ -n "$MTD_FIP_NAME" ]; then
 else
     error "Не удалось найти раздел FIP (U-Boot) в /proc/mtd! Прошивка невозможна."
 fi
-
-# --- БЕЗУСЛОВНОЕ СНЯТИЕ ЗАЩИТЫ ОТ ЗАПИСИ (READ-ONLY) ---
-info "Пытаемся разблокировать разделы памяти для записи..."
-
-# Функция для попытки загрузки модуля всеми способами
-load_mtd_rw() {
-    if ! lsmod | grep -qE "mtd_rw|mtd-rw"; then
-        insmod mtd-rw i_want_a_brick=1 2>/dev/null || \
-        insmod mtd_rw i_want_a_brick=1 2>/dev/null || \
-        insmod "/lib/modules/$(uname -r)/mtd-rw.ko" i_want_a_brick=1 2>/dev/null || \
-        insmod "/lib/modules/$(uname -r)/mtd_rw.ko" i_want_a_brick=1 2>/dev/null || \
-        modprobe mtd-rw i_want_a_brick=1 2>/dev/null || \
-        modprobe mtd_rw i_want_a_brick=1 2>/dev/null || true
-    fi
-}
-
-# Пробуем загрузить модуль, если он уже установлен в системе
-load_mtd_rw
-
-# Если модуль всё еще не загрузился, устанавливаем его через пакетный менеджер
-if ! lsmod | grep -qE "mtd_rw|mtd-rw"; then
-    info "Драйвер mtd-rw не найден. Пытаемся автоматически установить kmod-mtd-rw..."
-    
-    if command -v apk >/dev/null 2>&1; then
-        info "Используем пакетный менеджер apk для установки..."
-        apk update || true
-        apk add kmod-mtd-rw || true
-    elif command -v opkg >/dev/null 2>&1; then
-        info "Используем пакетный менеджер opkg для установки..."
-        opkg update || true
-        opkg install kmod-mtd-rw || true
-    fi
-    
-    # Пробуем загрузить свежеустановленный модуль
-    load_mtd_rw
-fi
-
-# Выводим финальный статус разблокировки
-if lsmod | grep -qE "mtd_rw|mtd-rw"; then
-    success "Драйвер разблокировки разделов (mtd-rw) успешно загружен!"
-else
-    warn "Не удалось автоматически загрузить модуль разблокировки разделов."
-    warn "Если при прошивке возникнет ошибка, выполните в терминале роутера вручную:"
-    echo ""
-    if command -v apk >/dev/null 2>&1; then
-        echo -e "  \033[1;32mapk update && apk add kmod-mtd-rw && insmod mtd-rw i_want_a_brick=1\033[0m"
-    else
-        echo -e "  \033[1;32mopkg update && opkg install kmod-mtd-rw && insmod mtd-rw i_want_a_brick=1\033[0m"
-    fi
-    echo ""
-fi
-# ------------------------------------------------------
 
 # Интерактивное скачивание с GitHub
 echo ""
