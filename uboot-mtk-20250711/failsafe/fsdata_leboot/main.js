@@ -461,7 +461,7 @@ function ensureBranding() {
     // Use current content as base version string
     let baseVersion = versionNode.getAttribute("data-base-version");
     if (!baseVersion) {
-        baseVersion = versionNode.innerHTML.trim() || "U-Boot Failsafe UI v2026.05.27 (e4df220cf)";
+        baseVersion = versionNode.innerHTML.trim() || "U-Boot Failsafe UI v2026.05.28 (a3b2a581f)";
         // Strip out any previously appended branding if re-run
         const projectIdx = baseVersion.indexOf("You can find");
         if (projectIdx !== -1) baseVersion = baseVersion.slice(0, projectIdx).trim();
@@ -474,7 +474,7 @@ function ensureBranding() {
     versionNode.style.fontSize = "0.82rem";
 
     versionNode.innerHTML = `
-        <strong>LEBOOT v1.1</strong><br>
+        <strong>LEBOOT v1.2</strong><br>
         дизайн: Le Maxime<br>
         <span style="font-size: 0.72rem; opacity: 0.85;">основано на ${baseVersion}</span>
     `;

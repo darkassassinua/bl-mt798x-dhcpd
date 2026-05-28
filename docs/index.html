@@ -4576,7 +4576,7 @@ function ensureBranding() {
     // Use current content as base version string
     let baseVersion = versionNode.getAttribute("data-base-version");
     if (!baseVersion) {
-        baseVersion = versionNode.innerHTML.trim() || "U-Boot Failsafe UI v2026.05.27 (e4df220cf)";
+        baseVersion = versionNode.innerHTML.trim() || "U-Boot Failsafe UI v2026.05.28 (a3b2a581f)";
         // Strip out any previously appended branding if re-run
         const projectIdx = baseVersion.indexOf("You can find");
         if (projectIdx !== -1) baseVersion = baseVersion.slice(0, projectIdx).trim();
@@ -4589,7 +4589,7 @@ function ensureBranding() {
     versionNode.style.fontSize = "0.82rem";
 
     versionNode.innerHTML = `
-        <strong>LEBOOT v1.0</strong><br>
+        <strong>LEBOOT v1.2</strong><br>
         дизайн: Le Maxime<br>
         <span style="font-size: 0.72rem; opacity: 0.85;">основано на ${baseVersion}</span>
     `;
@@ -5853,8 +5853,8 @@ function parseUserLen(input) {
                         size: 268435456 // 256 MB
                     },
                     mac: mac,
-                    version: "LEBOOT v1.0",
-                    build_date: "2026-05-27"
+                    version: "LEBOOT v1.2",
+                    build_date: "2026-05-28"
                 };
                 
                 setTimeout(() => {
@@ -5866,7 +5866,7 @@ function parseUserLen(input) {
             // Handle version request
             if (req.url === "/version") {
                 setTimeout(() => {
-                    req.done?.("LEBOOT v1.0");
+                    req.done?.("LEBOOT v1.2");
                 }, 10);
                 return;
             }
@@ -5938,8 +5938,8 @@ function parseUserLen(input) {
                         size: 268435456
                     },
                     mac: mac,
-                    version: "LEBOOT v1.0",
-                    build_date: "2026-05-27"
+                    version: "LEBOOT v1.2",
+                    build_date: "2026-05-28"
                 };
                 return new Response(JSON.stringify(sysinfo), { status: 200 });
             }

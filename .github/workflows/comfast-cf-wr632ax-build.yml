@@ -81,7 +81,7 @@ jobs:
           if [ -d "output" ]; then
             for f in output/*.bin output/*.fip; do
               [ -f "$f" ] || continue
-              # Rename: LEBOOT-v1.1-20260528-2028.fip
+              # Rename: LEBOOT-v1.2-20260528-2028.fip
               newname="upload/${leboot_tag}-${TIMESTAMP}.fip"
               cp "$f" "$newname"
             done
