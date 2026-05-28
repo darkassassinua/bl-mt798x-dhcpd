@@ -11,6 +11,9 @@
 
 ---
 
+**LEBOOT** is a premium AMOLED-ready dark theme redesign of the custom U-Boot Failsafe Web UI for MediaTek MT798x by Yuzhii, featuring a beautiful neon orange accent, built-in DHCPD server, advanced environment manager, and a automated zero-touch flashing script.
+
+
 ## 🎨 Описание LEBOOT
 **LEBOOT** заменяет стандартный интерфейс восстановления U-Boot на изысканный, современный AMOLED-ready темный интерфейс со стильными неоново-оранжевыми акцентами (`#ff5c00`), плавными микроанимациями и интуитивно понятным разделением настроек на базовые и расширенные разделы.
 
