@@ -6005,7 +6005,7 @@ function parseUserLen(input) {
             virtualPage = pageId;
             
             // Map the universal upload views to the 'upgrade' DOM view
-            const isUniversalUpload = ["upgrade", "uboot", "bl2", "initramfs"].includes(pageId);
+            const isUniversalUpload = ["upgrade", "uboot", "bl2", "initramfs", "gpt", "simg", "factory"].includes(pageId);
             
             // 1. Show/hide views
             document.getElementById("sim-view-index").style.display = pageId === "index" ? "" : "none";
