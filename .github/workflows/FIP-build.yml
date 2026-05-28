@@ -700,11 +700,6 @@ jobs:
           echo "- Model list files for each version output (MODEL=all)" >> release.txt
         fi
         echo "- Build time: ${{ env.FILE_DATE }}" >> release.txt
-
-        echo "" >> release.txt
-        echo "---" >> release.txt
-        echo "" >> release.txt
-        echo "**PLEASE SEE THE README FOR USAGE INSTRUCTIONS AND DISCLAIMERS.**" >> release.txt
         echo "release_tag=${{ env.FILE_DATE }}-${{ env.UPLOAD_TAG_NAME }}" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
 

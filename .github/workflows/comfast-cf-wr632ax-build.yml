@@ -56,9 +56,9 @@ jobs:
           # Run build command for the specific board
           make BOARD=comfast_cf-wr632ax VERSION=SP2 VARIANT=ubootmod FSTHEME=leboot
 
-          # Extract LEBOOT version dynamically and strip carriage returns/newlines
-          leboot_version=$(grep -oE "LEBOOT v[0-9.]+" uboot-mtk-20250711/failsafe/fsdata_leboot/main.js | head -n 1 | tr -d '\r' | tr -d '\n' || echo "LEBOOT v1.0")
-          leboot_tag=$(echo "$leboot_version" | tr ' ' '-' | tr -d '\r' | tr -d '\n')
+          # Get LEBOOT version
+          leboot_version=$(grep -oE "LEBOOT v[0-9.]+" uboot-mtk-20250711/failsafe/fsdata_leboot/main.js | head -n 1 | tr -d '\r\n' || echo "LEBOOT v1.1")
+          leboot_tag=$(echo "$leboot_version" | tr ' ' '-' | tr -d '\r\n')
 
           echo "FILE_DATE=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_ENV
           echo "LEBOOT_VER=$leboot_version" >> $GITHUB_ENV
@@ -73,16 +73,17 @@ jobs:
           set -euo pipefail
           cd bl-mt798x-dhcpd
 
-          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
-
-          # Rename files in output directory
-          if [ -d "output" ]; then
-            rename "s/(.*)\.(.*)/\$1_${TIMESTAMP}.\$2/" output/* || true
-          fi
+          TIMESTAMP=$(date +"%Y%m%d-%H%M")
+          leboot_tag="$LEBOOT_TAG"
 
           mkdir -p upload
           if [ -d "output" ]; then
-            cp -r output/* upload/ || true
+            for f in output/*.bin output/*.fip; do
+              [ -f "$f" ] || continue
+              # Rename: LEBOOT-v1.1-20260528-2028.fip
+              newname="upload/${leboot_tag}-${TIMESTAMP}.fip"
+              cp "$f" "$newname"
+            done
           fi
 
           echo "status=success" >> $GITHUB_OUTPUT
@@ -110,11 +111,6 @@ jobs:
           echo "- Коммит: ${{ github.sha }}" >> release.txt
           echo "- Версия: ${{ env.LEBOOT_VER }}" >> release.txt
           echo "- Время сборки: ${{ env.FILE_DATE }}" >> release.txt
-
-          echo "" >> release.txt
-          echo "---" >> release.txt
-          echo "" >> release.txt
-          echo "**ИНСТРУКЦИИ ПО ИСПОЛЬЗОВАНИЮ И ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ СМОТРИТЕ В README.**" >> release.txt
           echo "release_tag=${{ env.FILE_DATE }}-${{ env.LEBOOT_TAG }}" >> $GITHUB_OUTPUT
           echo "status=success" >> $GITHUB_OUTPUT
 
