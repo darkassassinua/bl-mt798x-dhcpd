@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Скрипт для безопасной прошивки загрузчика (FIP / U-Boot) на устройствах MediaTek MT798x
+# Скрипт для безопасного обновления загрузчика (FIP / U-Boot) на устройствах MediaTek MT798x
 # Разработан специально для comfast_cf-wr632ax и аналогичных плат.
 # Автоматически загружает последнюю версию сборки прямо с GitHub!
 #
@@ -177,26 +177,6 @@ md5sum "$FIP_FILE"
 info "Стираем и записываем FIP в \033[1m$MTD_FIP\033[0m..."
 mtd write "$FIP_FILE" "$MTD_FIP"
 success "Раздел FIP (U-Boot) успешно прошит!"
-
-# Очистка UBI (для NAND устройств)
-MTD_UBI=$(find_mtd_partition "ubi")
-if [ -n "$MTD_UBI" ]; then
-    echo ""
-    info "Обнаружен раздел UBI (NAND flash)."
-    warn "Для чистой установки новой прошивки рекомендуется стереть раздел UBI."
-    echo -n "Хотите очистить раздел UBI сейчас? (y/N): "
-    read erase_ubi < /dev/tty
-    case "$erase_ubi" in
-        y|Y|yes|YES)
-            info "Стираем раздел UBI ($MTD_UBI)..."
-            mtd erase "$MTD_UBI"
-            success "Раздел UBI успешно очищен!"
-            ;;
-        *)
-            info "Стирание раздела UBI пропущено."
-            ;;
-    esac
-fi
 
 echo ""
 success "========================================================"
