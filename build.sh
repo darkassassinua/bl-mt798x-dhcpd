@@ -137,7 +137,7 @@ ensure_failsafe_js_deps() {
 		return 0
 	fi
 
-	if [ -f "$marker" ] && [ -d "$failsafe_dir/node_modules/uglify-js" ]; then
+	if [ -f "$marker" ] && [ -d "$failsafe_dir/node_modules/terser" ]; then
 		echo "Failsafe JS build dependencies already installed."
 		return 0
 	fi
