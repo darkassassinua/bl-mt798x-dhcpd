@@ -113,16 +113,21 @@ case "$dl_confirm" in
             error "Не удалось получить список релизов с GitHub. Проверьте настройки сети на роутере."
         fi
         
-        # Фильтруем ссылки для FIP под наш комфаст
-        urls=$(echo "$json" | grep -oE 'https://github.com/[^"]+' | grep -E '\.bin$' | grep -i 'cf-wr632ax' | grep -i 'fip' || true)
-        
+        # Фильтруем ссылки: новый формат LEBOOT-vX.Y-DATE.fip
+        urls=$(echo "$json" | grep -oE 'https://github.com/[^"]+' | grep -iE '\.fip$' | grep -i 'LEBOOT' || true)
+
         if [ -z "$urls" ]; then
-            # Попробуем без ключевого слова 'fip', вдруг имя другое
-            urls=$(echo "$json" | grep -oE 'https://github.com/[^"]+' | grep -E '\.bin$' | grep -i 'cf-wr632ax' || true)
+            # Фолбек: старый формат *.bin с cf-wr632ax
+            urls=$(echo "$json" | grep -oE 'https://github.com/[^"]+' | grep -E '\.(bin|fip)$' | grep -i 'cf-wr632ax' || true)
         fi
-        
+
         if [ -z "$urls" ]; then
-            error "Не найдены скомпилированные файлы FIP (U-Boot) для Comfast CF-WR632AX в последнем релизе!"
+            # Последний фолбек: любой .fip или .bin файл в релизе
+            urls=$(echo "$json" | grep -oE 'https://github.com/[^"]+' | grep -E '\.(bin|fip)$' || true)
+        fi
+
+        if [ -z "$urls" ]; then
+            error "Не найдены файлы прошивки (.fip/.bin) в последнем релизе GitHub!"
         fi
         
         info "Найдены подходящие файлы для скачивания:"
@@ -182,14 +187,20 @@ select_file() {
     echo "$selected"
 }
 
-# Выбор файла прошивки FIP
-FIP_FILE=$(select_file "*fip*.bin" "Найдены следующие файлы для FIP:")
+# Выбор файла прошивки FIP: новый формат LEBOOT-*.fip, затем фолбеки
+FIP_FILE=$(select_file "LEBOOT-*.fip" "Найдены следующие файлы LEBOOT FIP:")
+if [ -z "$FIP_FILE" ]; then
+    FIP_FILE=$(select_file "*.fip" "Найдены следующие .fip файлы:")
+fi
+if [ -z "$FIP_FILE" ]; then
+    FIP_FILE=$(select_file "*fip*.bin" "Найдены следующие файлы для FIP:")
+fi
 if [ -z "$FIP_FILE" ]; then
     FIP_FILE=$(select_file "*u-boot*.bin" "Найдены следующие файлы для U-Boot:")
 fi
 
 if [ -z "$FIP_FILE" ]; then
-    error "Не найден файл FIP/U-Boot (*fip*.bin или *u-boot*.bin) в текущей папке!"
+    error "Не найден файл прошивки (LEBOOT-*.fip, *.fip, *fip*.bin) в текущей папке!"
 else
     info "Выбран файл FIP: \033[1m$FIP_FILE\033[0m"
 fi
