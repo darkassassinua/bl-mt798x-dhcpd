@@ -37,18 +37,26 @@ if [ ! -f /proc/mtd ]; then
     error "Этот скрипт должен быть запущен непосредственно на роутере под управлением OpenWrt!"
 fi
 
-# Поиск разделов mtd в /proc/mtd
+# Поиск разделов mtd в /proc/mtd (возвращает mtdX)
 find_mtd_partition() {
     local name="$1"
     local dev=$(grep -i "\"$name\"" /proc/mtd | cut -d':' -f1)
     echo "$dev"
 }
 
+# Нахождение оригинального имени раздела в /proc/mtd (возвращает FIP или fip с сохранением регистра)
+find_mtd_partition_name() {
+    local name="$1"
+    local label=$(grep -i "\"$name\"" /proc/mtd | cut -d'"' -f2)
+    echo "$label"
+}
+
 # Определение MTD раздела FIP
 MTD_FIP=$(find_mtd_partition "fip")
+MTD_FIP_NAME=$(find_mtd_partition_name "fip")
 
-if [ -n "$MTD_FIP" ]; then
-    info "Найден раздел FIP (U-Boot): \033[1m$MTD_FIP\033[0m"
+if [ -n "$MTD_FIP" ] && [ -n "$MTD_FIP_NAME" ]; then
+    info "Найден раздел загрузчика: \033[1m$MTD_FIP_NAME\033[0m ($MTD_FIP)"
 else
     error "Не удалось найти раздел FIP (U-Boot) в /proc/mtd! Прошивка невозможна."
 fi
@@ -220,7 +228,7 @@ if [ -z "$FIP_FILE" ]; then
 fi
 
 if [ -z "$FIP_FILE" ]; then
-    error "Не найден файл FIP/U-Boot (*fip*.bin или *u-boot*.bin) в текущей папке!"
+    error "Не найден файл FIP/U-Boot (*fip*.bin или *u-boot*.bin) in текущей папке!"
 else
     info "Выбран файл FIP: \033[1m$FIP_FILE\033[0m"
 fi
@@ -243,8 +251,8 @@ esac
 info "Вычисляем контрольную сумму FIP..."
 md5sum "$FIP_FILE"
 
-info "Стираем и записываем FIP в \033[1m/dev/$MTD_FIP\033[0m..."
-mtd write "$FIP_FILE" "/dev/$MTD_FIP"
+info "Стираем и записываем FIP в раздел \033[1m$MTD_FIP_NAME\033[0m..."
+mtd write "$FIP_FILE" "$MTD_FIP_NAME"
 success "Раздел FIP (U-Boot) успешно прошит!"
 
 echo ""
