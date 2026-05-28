@@ -16,13 +16,18 @@ const PROJECT_REPO_URL = "https://github.com/Yuzhii0718/bl-mt798x-dhcpd";
 
 // Single global state container (defined eagerly so early helpers can read it).
 var APP_STATE = {
-    lang: "ru",
+    lang: "en",
     theme: "auto",
     page: "",
 };
 
 function normalizeLang(input) {
-    return "ru";
+    if (!input) return "en";
+    const code = String(input).toLowerCase().split(/[-_]/)[0];
+    if (code === "ru") return "ru";
+    if (code === "uk") return "uk";
+    if (code === "zh") return "zh";
+    return "en";
 }
 
 function detectLang() {
