@@ -103,6 +103,10 @@ jobs:
           set -euo pipefail
           touch release.txt
 
+          echo "DEBUG: FILE_DATE='${{ env.FILE_DATE }}'"
+          echo "DEBUG: LEBOOT_VER='${{ env.LEBOOT_VER }}'"
+          echo "DEBUG: LEBOOT_TAG='${{ env.LEBOOT_TAG }}'"
+
           echo "- Коммит: ${{ github.sha }}" >> release.txt
           echo "- Версия: ${{ env.LEBOOT_VER }}" >> release.txt
           echo "- Время сборки: ${{ env.FILE_DATE }}" >> release.txt
