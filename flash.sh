@@ -61,72 +61,55 @@ else
     error "Не удалось найти раздел FIP (U-Boot) в /proc/mtd! Прошивка невозможна."
 fi
 
-# --- ПРОВЕРКА И СНЯТИЕ ЗАЩИТЫ ОТ ЗАПИСИ (READ-ONLY) ---
-MTD_INDEX=$(echo "$MTD_FIP" | tr -d 'mtd')
-if [ -f "/sys/class/mtd/mtd${MTD_INDEX}/ro" ]; then
-    IS_RO=$(cat "/sys/class/mtd/mtd${MTD_INDEX}/ro")
-    if [ "$IS_RO" = "1" ]; then
-        warn "Раздел FIP ($MTD_FIP) защищен от записи (Read-Only)!"
-        info "Пытаемся автоматически разблокировать раздел с помощью модуля mtd-rw..."
-        
-        # Функция для попытки загрузки модуля
-        load_mtd_rw() {
-            if ! lsmod | grep -qE "mtd_rw|mtd-rw"; then
-                if [ -f "/lib/modules/$(uname -r)/mtd-rw.ko" ]; then
-                    insmod "/lib/modules/$(uname -r)/mtd-rw.ko" i_want_a_brick=1 || true
-                elif [ -f "/lib/modules/$(uname -r)/mtd_rw.ko" ]; then
-                    insmod "/lib/modules/$(uname -r)/mtd_rw.ko" i_want_a_brick=1 || true
-                else
-                    modprobe mtd-rw i_want_a_brick=1 2>/dev/null || modprobe mtd_rw i_want_a_brick=1 2>/dev/null || true
-                fi
-            fi
-        }
-        
-        # Пробуем загрузить модуль, если он уже установлен
-        load_mtd_rw
-        
-        # Перепроверяем статус
-        IS_RO=$(cat "/sys/class/mtd/mtd${MTD_INDEX}/ro")
-        if [ "$IS_RO" = "1" ]; then
-            info "Раздел все еще заблокирован. Устанавливаем kmod-mtd-rw..."
-            
-            # Проверяем пакетный менеджер и устанавливаем kmod-mtd-rw
-            if command -v apk >/dev/null 2>&1; then
-                info "Обнаружен пакетный менеджер apk. Обновляем репозитории и устанавливаем модуль..."
-                apk update || true
-                apk add kmod-mtd-rw || true
-            elif command -v opkg >/dev/null 2>&1; then
-                info "Обнаружен пакетный менеджер opkg. Обновляем репозитории и устанавливаем модуль..."
-                opkg update || true
-                opkg install kmod-mtd-rw || true
-            else
-                warn "Пакетный менеджер (apk или opkg) не найден!"
-            fi
-            
-            # Пробуем загрузить свежеустановленный модуль
-            load_mtd_rw
-        fi
-        
-        # Финальная перепроверка статуса после попытки разблокировки
-        IS_RO=$(cat "/sys/class/mtd/mtd${MTD_INDEX}/ro")
-        if [ "$IS_RO" = "1" ]; then
-            echo ""
-            warn "Раздел FIP все еще защищен от записи!"
-            warn "Не удалось автоматически установить или загрузить модуль разблокировки разделов."
-            warn "Пожалуйста, подключите роутер к интернету и выполните команды вручную:"
-            echo ""
-            if command -v apk >/dev/null 2>&1; then
-                echo -e "  \033[1;32mapk update && apk add kmod-mtd-rw\033[0m"
-            else
-                echo -e "  \033[1;32mopkg update && opkg install kmod-mtd-rw\033[0m"
-            fi
-            echo -e "  \033[1;32minsmod mtd-rw i_want_a_brick=1\033[0m"
-            echo ""
-            error "После ручной установки запустите этот скрипт снова!"
-        else
-            success "Раздел FIP успешно разблокирован для записи!"
-        fi
+# --- БЕЗУСЛОВНОЕ СНЯТИЕ ЗАЩИТЫ ОТ ЗАПИСИ (READ-ONLY) ---
+info "Пытаемся разблокировать разделы памяти для записи..."
+
+# Функция для попытки загрузки модуля всеми способами
+load_mtd_rw() {
+    if ! lsmod | grep -qE "mtd_rw|mtd-rw"; then
+        insmod mtd-rw i_want_a_brick=1 2>/dev/null || \
+        insmod mtd_rw i_want_a_brick=1 2>/dev/null || \
+        insmod "/lib/modules/$(uname -r)/mtd-rw.ko" i_want_a_brick=1 2>/dev/null || \
+        insmod "/lib/modules/$(uname -r)/mtd_rw.ko" i_want_a_brick=1 2>/dev/null || \
+        modprobe mtd-rw i_want_a_brick=1 2>/dev/null || \
+        modprobe mtd_rw i_want_a_brick=1 2>/dev/null || true
     fi
+}
+
+# Пробуем загрузить модуль, если он уже установлен в системе
+load_mtd_rw
+
+# Если модуль всё еще не загрузился, устанавливаем его через пакетный менеджер
+if ! lsmod | grep -qE "mtd_rw|mtd-rw"; then
+    info "Драйвер mtd-rw не найден. Пытаемся автоматически установить kmod-mtd-rw..."
+    
+    if command -v apk >/dev/null 2>&1; then
+        info "Используем пакетный менеджер apk для установки..."
+        apk update || true
+        apk add kmod-mtd-rw || true
+    elif command -v opkg >/dev/null 2>&1; then
+        info "Используем пакетный менеджер opkg для установки..."
+        opkg update || true
+        opkg install kmod-mtd-rw || true
+    fi
+    
+    # Пробуем загрузить свежеустановленный модуль
+    load_mtd_rw
+fi
+
+# Выводим финальный статус разблокировки
+if lsmod | grep -qE "mtd_rw|mtd-rw"; then
+    success "Драйвер разблокировки разделов (mtd-rw) успешно загружен!"
+else
+    warn "Не удалось автоматически загрузить модуль разблокировки разделов."
+    warn "Если при прошивке возникнет ошибка, выполните в терминале роутера вручную:"
+    echo ""
+    if command -v apk >/dev/null 2>&1; then
+        echo -e "  \033[1;32mapk update && apk add kmod-mtd-rw && insmod mtd-rw i_want_a_brick=1\033[0m"
+    else
+        echo -e "  \033[1;32mopkg update && opkg install kmod-mtd-rw && insmod mtd-rw i_want_a_brick=1\033[0m"
+    fi
+    echo ""
 fi
 # ------------------------------------------------------
 
@@ -228,7 +211,7 @@ if [ -z "$FIP_FILE" ]; then
 fi
 
 if [ -z "$FIP_FILE" ]; then
-    error "Не найден файл FIP/U-Boot (*fip*.bin или *u-boot*.bin) in текущей папке!"
+    error "Не найден файл FIP/U-Boot (*fip*.bin или *u-boot*.bin) в текущей папке!"
 else
     info "Выбран файл FIP: \033[1m$FIP_FILE\033[0m"
 fi
