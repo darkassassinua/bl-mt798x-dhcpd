@@ -15,6 +15,7 @@ WEBUI_FAILSAFE_GIT_DIRTY := $(shell \
 
 ccflags-y += -DWEBUI_FAILSAFE_GIT_HASH=\"$(WEBUI_FAILSAFE_GIT_HASH)\"
 ccflags-y += -DWEBUI_FAILSAFE_GIT_DIRTY=$(WEBUI_FAILSAFE_GIT_DIRTY)
+ccflags-y += -Wno-error=date-time
 
 ifeq ($(CONFIG_XPL_BUILD),)
 
