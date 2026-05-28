@@ -61,29 +61,47 @@ if [ -f "/sys/class/mtd/mtd${MTD_INDEX}/ro" ]; then
         warn "Раздел FIP ($MTD_FIP) защищен от записи (Read-Only)!"
         info "Пытаемся автоматически разблокировать раздел с помощью модуля mtd-rw..."
         
-        # Проверяем, загружен ли модуль, если нет - пытаемся загрузить
-        if ! lsmod | grep -qE "mtd_rw|mtd-rw"; then
-            if [ -f "/lib/modules/$(uname -r)/mtd-rw.ko" ]; then
-                insmod "/lib/modules/$(uname -r)/mtd-rw.ko" i_want_a_brick=1 || true
-            elif [ -f "/lib/modules/$(uname -r)/mtd_rw.ko" ]; then
-                insmod "/lib/modules/$(uname -r)/mtd_rw.ko" i_want_a_brick=1 || true
-            else
-                modprobe mtd-rw i_want_a_brick=1 2>/dev/null || modprobe mtd_rw i_want_a_brick=1 2>/dev/null || true
+        # Функция для попытки загрузки модуля
+        load_mtd_rw() {
+            if ! lsmod | grep -qE "mtd_rw|mtd-rw"; then
+                if [ -f "/lib/modules/$(uname -r)/mtd-rw.ko" ]; then
+                    insmod "/lib/modules/$(uname -r)/mtd-rw.ko" i_want_a_brick=1 || true
+                elif [ -f "/lib/modules/$(uname -r)/mtd_rw.ko" ]; then
+                    insmod "/lib/modules/$(uname -r)/mtd_rw.ko" i_want_a_brick=1 || true
+                else
+                    modprobe mtd-rw i_want_a_brick=1 2>/dev/null || modprobe mtd_rw i_want_a_brick=1 2>/dev/null || true
+                fi
+            fi
+        }
+        
+        # Пробуем загрузить модуль, если он уже установлен
+        load_mtd_rw
+        
+        # Перепроверяем статус
+        IS_RO=$(cat "/sys/class/mtd/mtd${MTD_INDEX}/ro")
+        if [ "$IS_RO" = "1" ]; then
+            info "Раздел все еще заблокирован. Устанавливаем kmod-mtd-rw через opkg..."
+            
+            # Запускаем обновление пакетов и установку драйвера
+            opkg update || true
+            if opkg install kmod-mtd-rw; then
+                # Пробуем загрузить свежеустановленный модуль
+                load_mtd_rw
             fi
         fi
         
-        # Перепроверяем статус после попытки разблокировки
+        # Финальная перепроверка статуса после попытки разблокировки
         IS_RO=$(cat "/sys/class/mtd/mtd${MTD_INDEX}/ro")
         if [ "$IS_RO" = "1" ]; then
             echo ""
             warn "Раздел FIP все еще защищен от записи!"
-            warn "Для прошивки необходимо установить модуль разблокировки разделов."
-            warn "Пожалуйста, выполните в терминале роутера следующие команды:"
+            warn "Не удалось автоматически установить или загрузить модуль разблокировки разделов."
+            warn "Пожалуйста, подключите роутер к интернету и выполните команды вручную:"
             echo ""
             echo -e "  \033[1;32mopkg update && opkg install kmod-mtd-rw\033[0m"
             echo -e "  \033[1;32minsmod mtd-rw i_want_a_brick=1\033[0m"
             echo ""
-            error "После выполнения команд запустите этот скрипт снова!"
+            error "После ручной установки запустите этот скрипт снова!"
         else
             success "Раздел FIP успешно разблокирован для записи!"
         fi
