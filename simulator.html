@@ -5042,12 +5042,9 @@ function updateSimgNavVisibility() {
         .then((response) => {
             if (response?.ok) {
                 simgNavLink.style.display = "";
-                return;
             }
-            console.warn("SIMG probe HTTP status:", response?.status ?? "unknown");
-            console.info("If SIMG feature is not enabled, this warning is expected.");
         })
-        .catch((error) => console.warn("SIMG probe failed:", error));
+        .catch(() => {});
 }
 
 function renderSysInfo() {
