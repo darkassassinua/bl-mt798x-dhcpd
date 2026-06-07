@@ -429,6 +429,7 @@ if [ -f "$ATF_DIR/build/${SOC}/release/fip.bin" ]; then
 	FIP_NAME="${FIP_NAME}_md5-${FIP_MD5}"
 	echo "fip-${SOC}_${BOARD}_${VERSION}_${VARIANT} build done"
 	echo "fip.bin md5sum: $FIP_MD5"
+	echo "fip.bin size: $(stat -c%s "$ATF_DIR/build/${SOC}/release/fip.bin") bytes"
 	cp -f "$ATF_DIR/build/${SOC}/release/fip.bin" "output/${FIP_NAME}.bin"
 	echo "Output: output/${FIP_NAME}.bin"
 else
@@ -454,6 +455,7 @@ if grep -Eq "(^_|CONFIG_TARGET_ALL_NO_SEC_BOOT=y)" "$ATF_CFG_PATH"; then
 		BL2_NAME="${BL2_NAME}_md5-${BL2_MD5}"
 		echo "bl2-${SOC}_${BOARD}_${VERSION}_${VARIANT} build done"
 		echo "bl2.img md5sum: $BL2_MD5"
+		echo "bl2.img size: $(stat -c%s "$ATF_DIR/build/${SOC}/release/bl2.img") bytes"
 		if [ "$COPY_BL2" = "1" ]; then
 			cp -f "$ATF_DIR/build/${SOC}/release/bl2.img" "output/${BL2_NAME}.img"
 			echo "Output: output/${BL2_NAME}.img"
