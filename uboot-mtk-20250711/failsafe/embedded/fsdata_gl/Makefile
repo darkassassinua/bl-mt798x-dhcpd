@@ -79,11 +79,11 @@ FSPATH_uboot.o := uboot.html
 
 # customized build rules
 strip_path = $(subst /,_,$(subst -,_,$(subst .,_,$(1))))
-WEBUI_FAILSAFE_JS_MINIFY_SCRIPT = $(srctree)/$(src)/../minify-js.cjs
+WEBUI_FAILSAFE_JS_MINIFY_SCRIPT = $(srctree)/$(src)/../../minify-js.cjs
 
-WEBUI_FAILSAFE_CSS_MINIFY_SCRIPT = $(srctree)/$(src)/../minify-css.cjs
-WEBUI_FAILSAFE_HTML_MINIFY_SCRIPT = $(srctree)/$(src)/../minify-html.cjs
-WEBUI_FAILSAFE_GZIP_SCRIPT = $(srctree)/$(src)/../gzip-compress.cjs
+WEBUI_FAILSAFE_CSS_MINIFY_SCRIPT = $(srctree)/$(src)/../../minify-css.cjs
+WEBUI_FAILSAFE_HTML_MINIFY_SCRIPT = $(srctree)/$(src)/../../minify-html.cjs
+WEBUI_FAILSAFE_GZIP_SCRIPT = $(srctree)/$(src)/../../gzip-compress.cjs
 
 quiet_cmd_minify_css = CLEANCSS $@
 cmd_minify_css = mkdir -p $(dir $@) && node $(WEBUI_FAILSAFE_CSS_MINIFY_SCRIPT) $< $@

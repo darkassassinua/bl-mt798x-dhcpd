@@ -19,11 +19,11 @@ ccflags-y += -DWEBUI_FAILSAFE_GIT_DIRTY=$(WEBUI_FAILSAFE_GIT_DIRTY)
 ifeq ($(CONFIG_XPL_BUILD),)
 
 ifeq ($(CONFIG_WEBUI_FAILSAFE_UI_GL),y)
-obj-y += fsdata_gl/
+obj-y += embedded/fsdata_gl/
 else ifeq ($(CONFIG_WEBUI_FAILSAFE_UI_MTK),y)
-obj-y += fsdata_mtk/
+obj-y += embedded/fsdata_mtk/
 else
-obj-y += fsdata/
+obj-y += embedded/fsdata/
 endif
 
 obj-y += fs.o failsafe_core.o
