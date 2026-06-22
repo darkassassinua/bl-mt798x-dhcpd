@@ -21,19 +21,19 @@
 
 #ifdef CONFIG_MTD
 #include <linux/mtd/mtd.h>
-#include "../board/mediatek/common/mtd_helper.h"
+#include "../../board/mediatek/common/mtd_helper.h"
 #endif
 
 #ifdef CONFIG_MTK_BOOTMENU_MMC
-#include "../board/mediatek/common/mmc_helper.h"
+#include "../../board/mediatek/common/mmc_helper.h"
 #endif
 
 #ifdef CONFIG_PARTITIONS
 #include <part.h>
 #endif
 
-#include "fs.h"
-#include "failsafe_helpers.h"
+#include "../fs.h"
+#include "helpers.h"
 
 /* ------------------------------------------------------------------ */
 /*  HTTP response helpers                                              */
@@ -191,6 +191,77 @@ void failsafe_str_sanitize(char *s)
 		*p = '_';
 	}
 }
+
+/* ------------------------------------------------------------------ */
+/*  JSON escape                                                        */
+/* ------------------------------------------------------------------ */
+
+size_t json_escape(char *dst, size_t dst_sz, const char *src)
+{
+	size_t di = 0;
+	const unsigned char *s = (const unsigned char *)src;
+
+	if (!dst || !dst_sz)
+		return 0;
+
+	if (!src) {
+		dst[0] = '\0';
+		return 0;
+	}
+
+	while (*s && di + 2 < dst_sz) {
+		unsigned char c = *s++;
+
+		if (c == '"' || c == '\\') {
+			if (di + 2 >= dst_sz)
+				break;
+			dst[di++] = '\\';
+			dst[di++] = (char)c;
+			continue;
+		}
+
+		if (c == '\n' || c == '\r' || c == '\t') {
+			if (di + 2 >= dst_sz)
+				break;
+			dst[di++] = '\\';
+			dst[di++] = (c == '\n') ? 'n' : (c == '\r') ? 'r' : 't';
+			continue;
+		}
+
+		if (c < 0x20) {
+			/* skip other control chars */
+			dst[di++] = ' ';
+			continue;
+		}
+
+		dst[di++] = (char)c;
+	}
+
+	dst[di] = '\0';
+	return di;
+}
+
+/* ------------------------------------------------------------------ */
+/*  MMC presence check                                                 */
+/* ------------------------------------------------------------------ */
+
+#ifdef CONFIG_MTK_BOOTMENU_MMC
+bool failsafe_mmc_present(void)
+{
+	struct mmc *mmc;
+	struct blk_desc *bd;
+
+	mmc = _mmc_get_dev(CONFIG_MTK_BOOTMENU_MMC_DEV_INDEX, 0, false);
+	bd = mmc ? mmc_get_blk_desc(mmc) : NULL;
+
+	return mmc && bd && bd->type != DEV_TYPE_UNKNOWN;
+}
+#else
+bool failsafe_mmc_present(void)
+{
+	return false;
+}
+#endif
 
 /* ------------------------------------------------------------------ */
 /*  Storage target helpers                                             */

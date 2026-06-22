@@ -24,18 +24,18 @@
 #include <linux/mtd/nand.h>
 #include <linux/mtd/spi-nor.h>
 #include <linux/mtd/spinand.h>
-#include "../board/mediatek/common/mtd_helper.h"
+#include "../../board/mediatek/common/mtd_helper.h"
 #endif
 
 #ifdef CONFIG_MTK_BOOTMENU_MMC
-#include "../board/mediatek/common/mmc_helper.h"
+#include "../../board/mediatek/common/mmc_helper.h"
 #endif
 
 #ifdef CONFIG_PARTITIONS
 #include <part.h>
 #endif
 
-#include "failsafe_internal.h"
+#include "../failsafe_internal.h"
 
 #define FLASH_EDIT_MAX_READ	4096
 #define FLASH_EDIT_MAX_WRITE	(64 * 1024)
@@ -792,3 +792,15 @@ io_err:
 		"{\"ok\":false,\"error\":\"io\"}\n");
 	return;
 }
+
+#ifdef CONFIG_WEBUI_FAILSAFE_FLASH
+void flash_register_handlers(struct httpd_instance *inst)
+{
+	httpd_register_uri_handler(inst, "/flash.html", &html_handler, NULL);
+	httpd_register_uri_handler(inst, "/flash_js.js", &js_handler, NULL);
+	httpd_register_uri_handler(inst, "/flash/read", &flash_handler, NULL);
+	httpd_register_uri_handler(inst, "/flash/write", &flash_handler, NULL);
+	httpd_register_uri_handler(inst, "/flash/erase", &flash_handler, NULL);
+	httpd_register_uri_handler(inst, "/flash/restore", &flash_handler, NULL);
+}
+#endif

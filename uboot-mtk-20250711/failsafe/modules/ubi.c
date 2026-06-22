@@ -31,7 +31,7 @@
 #include <ubifs_uboot.h>
 #endif
 
-#include "failsafe_internal.h"
+#include "../failsafe_internal.h"
 
 /* Max buffer size for JSON response */
 #define UBI_JSON_BUF_SZ		16384
@@ -810,3 +810,20 @@ void ubi_backup_handler(enum httpd_uri_handler_status status,
 	response->data = st->hdr;
 	response->size = st->hdr_len;
 }
+
+#ifdef CONFIG_WEBUI_FAILSAFE_UBI
+void ubi_register_handlers(struct httpd_instance *inst)
+{
+	httpd_register_uri_handler(inst, "/ubi.html", &html_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi_js.js", &js_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/info", &ubi_info_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/volumes", &ubi_volumes_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/attach", &ubi_attach_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/detach", &ubi_detach_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/create", &ubi_create_vol_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/remove", &ubi_remove_vol_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/rename", &ubi_rename_vol_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/mtd_list", &ubi_mtd_list_handler, NULL);
+	httpd_register_uri_handler(inst, "/ubi/backup", &ubi_backup_handler, NULL);
+}
+#endif

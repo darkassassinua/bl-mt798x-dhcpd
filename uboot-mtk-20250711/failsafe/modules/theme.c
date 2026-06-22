@@ -18,8 +18,8 @@
 #include <linux/string.h>
 #include <net/mtk_httpd.h>
 
-#include "fs.h"
-#include "failsafe_internal.h"
+#include "../fs.h"
+#include "../failsafe_internal.h"
 
 #define THEME_COLOR_ENV "failsafe_theme_color"
 #define THEME_COLOR_MAX_LEN 8
@@ -362,3 +362,15 @@ out_free:
 		failsafe_http_reply_json(response, 500,
 			"{\"ok\":false,\"error\":\"save\"}");
 }
+
+#ifdef CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP
+void theme_register_handlers(struct httpd_instance *inst)
+{
+	httpd_register_uri_handler(inst, "/favicon.svg", &picture_handler, NULL);
+	httpd_register_uri_handler(inst, "/settings.html", &html_handler, NULL);
+	httpd_register_uri_handler(inst, "/settings_js.js", &js_handler, NULL);
+	httpd_register_uri_handler(inst, "/theme.js", &js_handler, NULL);
+	httpd_register_uri_handler(inst, "/theme/get", &theme_get_handler, NULL);
+	httpd_register_uri_handler(inst, "/theme/set", &theme_set_handler, NULL);
+}
+#endif

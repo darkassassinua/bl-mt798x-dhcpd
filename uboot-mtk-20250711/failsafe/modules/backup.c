@@ -24,18 +24,18 @@
 #include <linux/mtd/nand.h>
 #include <linux/mtd/spi-nor.h>
 #include <linux/mtd/spinand.h>
-#include "../board/mediatek/common/mtd_helper.h"
+#include "../../board/mediatek/common/mtd_helper.h"
 #endif
 
 #ifdef CONFIG_MTK_BOOTMENU_MMC
-#include "../board/mediatek/common/mmc_helper.h"
+#include "../../board/mediatek/common/mmc_helper.h"
 #endif
 
 #ifdef CONFIG_PARTITIONS
 #include <part.h>
 #endif
 
-#include "failsafe_internal.h"
+#include "../failsafe_internal.h"
 
 enum backup_phase {
 	BACKUP_PHASE_HDR = 0,
@@ -576,3 +576,13 @@ io_err:
 	response->status = HTTP_RESP_NONE;
 	return;
 }
+
+#ifdef CONFIG_WEBUI_FAILSAFE_BACKUP
+void backup_register_handlers(struct httpd_instance *inst)
+{
+	httpd_register_uri_handler(inst, "/backup.html", &html_handler, NULL);
+	httpd_register_uri_handler(inst, "/backup_js.js", &js_handler, NULL);
+	httpd_register_uri_handler(inst, "/backup/info", &backupinfo_handler, NULL);
+	httpd_register_uri_handler(inst, "/backup/main", &backup_handler, NULL);
+}
+#endif

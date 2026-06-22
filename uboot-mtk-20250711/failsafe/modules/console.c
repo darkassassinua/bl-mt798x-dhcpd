@@ -20,7 +20,7 @@
 #include <linux/string.h>
 #include <net/mtk_httpd.h>
 
-#include "failsafe_internal.h"
+#include "../failsafe_internal.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -397,3 +397,16 @@ void webconsole_clear_handler(enum httpd_uri_handler_status status,
 	response->size = strlen(json);
 	response->session_data = json;
 }
+
+#ifdef CONFIG_WEBUI_FAILSAFE_CONSOLE
+void console_register_handlers(struct httpd_instance *inst)
+{
+	/* Enable recording early so we can stream output to the browser */
+	failsafe_webconsole_ensure_recording();
+	httpd_register_uri_handler(inst, "/console.html", &html_handler, NULL);
+	httpd_register_uri_handler(inst, "/console_js.js", &js_handler, NULL);
+	httpd_register_uri_handler(inst, "/console/poll", &webconsole_poll_handler, NULL);
+	httpd_register_uri_handler(inst, "/console/exec", &webconsole_exec_handler, NULL);
+	httpd_register_uri_handler(inst, "/console/clear", &webconsole_clear_handler, NULL);
+}
+#endif

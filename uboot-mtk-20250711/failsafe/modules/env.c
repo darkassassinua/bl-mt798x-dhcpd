@@ -18,7 +18,7 @@
 #include <linux/string.h>
 #include <net/mtk_httpd.h>
 
-#include "failsafe_internal.h"
+#include "../failsafe_internal.h"
 
 #define ENV_NAME_MAX_LEN 128
 
@@ -464,3 +464,17 @@ void env_size_handler(enum httpd_uri_handler_status status,
 	response->info.content_type = "text/plain";
 	response->session_data = out;
 }
+
+#ifdef CONFIG_WEBUI_FAILSAFE_ENV
+void env_register_handlers(struct httpd_instance *inst)
+{
+	httpd_register_uri_handler(inst, "/env.html", &html_handler, NULL);
+	httpd_register_uri_handler(inst, "/env_js.js", &js_handler, NULL);
+	httpd_register_uri_handler(inst, "/env/list", &env_list_handler, NULL);
+	httpd_register_uri_handler(inst, "/env/set", &env_set_handler, NULL);
+	httpd_register_uri_handler(inst, "/env/unset", &env_unset_handler, NULL);
+	httpd_register_uri_handler(inst, "/env/reset", &env_reset_handler, NULL);
+	httpd_register_uri_handler(inst, "/env/restore", &env_restore_handler, NULL);
+	httpd_register_uri_handler(inst, "/env/size", &env_size_handler, NULL);
+}
+#endif

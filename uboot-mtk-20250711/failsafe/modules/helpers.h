@@ -10,8 +10,8 @@
  * Common HTTP helper functions shared by all failsafe modules
  */
 
-#ifndef _FAILSAFE_HELPERS_H_
-#define _FAILSAFE_HELPERS_H_
+#ifndef _FAILSAFE_MODULES_HELPERS_H_
+#define _FAILSAFE_MODULES_HELPERS_H_
 
 #include <net/mtk_httpd.h>
 #include <linux/types.h>
@@ -122,6 +122,23 @@ int failsafe_output_file(struct httpd_response *response,
  */
 void failsafe_str_sanitize(char *s);
 
+/**
+ * json_escape - escape a string for JSON output
+ * @dst: destination buffer
+ * @dst_sz: destination buffer size
+ * @src: source string
+ *
+ * Returns the number of characters written (excluding null terminator).
+ */
+size_t json_escape(char *dst, size_t dst_sz, const char *src);
+
+/**
+ * failsafe_mmc_present - check if MMC device is present
+ *
+ * Returns true if the configured MMC device is present and valid.
+ */
+bool failsafe_mmc_present(void);
+
 /* ------------------------------------------------------------------ */
 /*  Storage target helpers (shared by backup and flash modules)        */
 /* ------------------------------------------------------------------ */
@@ -194,4 +211,4 @@ int flash_parse_storage_target(struct httpd_request *request,
  */
 void failsafe_mmc_vendor_pretty(const char *vendor, char *dst, size_t dst_sz);
 
-#endif /* _FAILSAFE_HELPERS_H_ */
+#endif /* _FAILSAFE_MODULES_HELPERS_H_ */
