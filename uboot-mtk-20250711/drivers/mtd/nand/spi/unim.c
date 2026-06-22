@@ -147,8 +147,7 @@ static int tx25g01_ecc_get_status(struct spinand_device *spinand,
  *	not corrected.
  * others, Reserved.
  */
-static int um19axxisw_ecc_ecc_get_status(struct spinand_device *spinand,
-					u8 status)
+static int um19axxisw_ecc_get_status(struct spinand_device *spinand, u8 status)
 {
 	struct nand_device *nand = spinand_to_nand(spinand);
 	u8 eccsr = (status & GENMASK(6, 4)) >> 4;
@@ -196,8 +195,7 @@ static int um19a9xisw_ecc_get_status(struct spinand_device *spinand,
  * [0b110], Reserved;
  * [0b111], Invalid;
  */
-static int um19a0xisw_ecc_ecc_get_status(struct spinand_device *spinand,
-					u8 status)
+static int um19a0xisw_ecc_get_status(struct spinand_device *spinand, u8 status)
 {
 	struct nand_device *nand = spinand_to_nand(spinand);
 	u8 eccsr = (status & GENMASK(6, 4)) >> 4;
@@ -231,7 +229,7 @@ static const struct spinand_info unim_spinand_table[] = {
 					      &write_cache_variants,
 					      &update_cache_variants),
 		     SPINAND_HAS_QE_BIT,
-		     SPINAND_ECCINFO(&um19a1xisw_ooblayout, um19axxisw_ecc_ecc_get_status)),
+		     SPINAND_ECCINFO(&um19a1xisw_ooblayout, um19axxisw_ecc_get_status)),
 	SPINAND_INFO("UM19A0HCSW",
 		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x14),
 		     NAND_MEMORG(1, 2048, 64, 64, 1024, 20, 1, 1, 1),
@@ -240,7 +238,7 @@ static const struct spinand_info unim_spinand_table[] = {
 					      &write_cache_variants,
 					      &update_cache_variants),
 		     SPINAND_HAS_QE_BIT,
-		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19axxisw_ecc_ecc_get_status)),
+		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19a0xisw_ecc_get_status)),
 	SPINAND_INFO("UM19A0LCSW",
 		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x15),
 		     NAND_MEMORG(1, 2048, 64, 64, 1024, 20, 1, 1, 1),
@@ -249,7 +247,7 @@ static const struct spinand_info unim_spinand_table[] = {
 					      &write_cache_variants,
 					      &update_cache_variants),
 		     SPINAND_HAS_QE_BIT,
-		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19axxisw_ecc_ecc_get_status)),
+		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19a0xisw_ecc_get_status)),
 	SPINAND_INFO("UM19A1LISW",
 		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x25),
 		     NAND_MEMORG(1, 2048, 128, 64, 2048, 40, 1, 1, 1),
@@ -258,7 +256,7 @@ static const struct spinand_info unim_spinand_table[] = {
 					      &write_cache_variants,
 					      &update_cache_variants),
 		     SPINAND_HAS_QE_BIT,
-		     SPINAND_ECCINFO(&um19a1xisw_ooblayout, um19axxisw_ecc_ecc_get_status)),
+		     SPINAND_ECCINFO(&um19a1xisw_ooblayout, um19axxisw_ecc_get_status)),
 	SPINAND_INFO("UM19A9LISW",
 		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x0D),
 		     NAND_MEMORG(1, 2048, 128, 64, 512, 10, 1, 1, 1),
@@ -285,16 +283,7 @@ static const struct spinand_info unim_spinand_table[] = {
 					      &write_cache_variants,
 					      &update_cache_variants),
 		     SPINAND_HAS_QE_BIT,
-		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19a0xisw_ecc_ecc_get_status)),
-	SPINAND_INFO("UM19A0LISW",
-		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x15),
-		     NAND_MEMORG(1, 2048, 64, 64, 1024, 20, 1, 1, 1),
-		     NAND_ECCREQ(8, 512),
-		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
-					      &write_cache_variants,
-					      &update_cache_variants),
-		     SPINAND_HAS_QE_BIT,
-		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19a0xisw_ecc_ecc_get_status)),
+		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19a0xisw_ecc_get_status)),
 	SPINAND_INFO("UM19B2HISW",
 		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x34),
 		     NAND_MEMORG(1, 4096, 256, 128, 1024, 40, 1, 1, 1),
@@ -303,7 +292,34 @@ static const struct spinand_info unim_spinand_table[] = {
 					      &write_cache_variants,
 					      &update_cache_variants),
 		     SPINAND_HAS_QE_BIT,
-		     SPINAND_ECCINFO(&um19a1xisw_ooblayout, um19axxisw_ecc_ecc_get_status)),
+		     SPINAND_ECCINFO(&um19a1xisw_ooblayout, um19axxisw_ecc_get_status)),
+	SPINAND_INFO("UM19C0HISW",
+		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x1C),
+		     NAND_MEMORG(1, 2048, 64, 64, 1024, 20, 1, 1, 1),
+		     NAND_ECCREQ(8, 512),
+		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
+					      &write_cache_variants,
+					      &update_cache_variants),
+		     SPINAND_HAS_QE_BIT,
+		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19axxisw_ecc_get_status)),
+	SPINAND_INFO("UM19A0LISW",
+		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x15),
+		     NAND_MEMORG(1, 2048, 64, 64, 1024, 20, 1, 1, 1),
+		     NAND_ECCREQ(8, 512),
+		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
+					      &write_cache_variants,
+					      &update_cache_variants),
+		     SPINAND_HAS_QE_BIT,
+		     SPINAND_ECCINFO(&um19a0xisw_ooblayout, um19a0xisw_ecc_get_status)),
+	SPINAND_INFO("UM19B2HISW",
+		     SPINAND_ID(SPINAND_READID_METHOD_OPCODE_DUMMY, 0x34),
+		     NAND_MEMORG(1, 4096, 256, 128, 1024, 40, 1, 1, 1),
+		     NAND_ECCREQ(8, 512),
+		     SPINAND_INFO_OP_VARIANTS(&read_cache_variants,
+					      &write_cache_variants,
+					      &update_cache_variants),
+		     SPINAND_HAS_QE_BIT,
+		     SPINAND_ECCINFO(&um19a1xisw_ooblayout, um19axxisw_ecc_get_status)),
 };
 
 static const struct spinand_manufacturer_ops unim_spinand_manuf_ops = {
