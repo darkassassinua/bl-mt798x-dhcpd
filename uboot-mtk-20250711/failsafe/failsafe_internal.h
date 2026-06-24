@@ -182,7 +182,7 @@ void flash_register_handlers(struct httpd_instance *inst);
 #ifdef CONFIG_WEBUI_FAILSAFE_ENV
 void env_register_handlers(struct httpd_instance *inst);
 #endif
-#ifdef CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP
+#if defined(CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP) || defined(CONFIG_WEBUI_FAILSAFE_UI_LEBOOT)
 void theme_register_handlers(struct httpd_instance *inst);
 #endif
 #ifdef CONFIG_WEBUI_FAILSAFE_UBI

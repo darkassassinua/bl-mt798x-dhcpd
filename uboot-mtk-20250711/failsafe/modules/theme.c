@@ -363,7 +363,7 @@ out_free:
 			"{\"ok\":false,\"error\":\"save\"}");
 }
 
-#ifdef CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP
+#if defined(CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP) || defined(CONFIG_WEBUI_FAILSAFE_UI_LEBOOT)
 void theme_register_handlers(struct httpd_instance *inst)
 {
 	httpd_register_uri_handler(inst, "/favicon.svg", &picture_handler, NULL);

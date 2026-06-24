@@ -20,6 +20,9 @@
 #include <dm/ofnode.h>
 #include <vsprintf.h>
 #include <version_string.h>
+#include <asm/global_data.h>
+
+DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_MTD
 #include "../../board/mediatek/common/mtd_helper.h"

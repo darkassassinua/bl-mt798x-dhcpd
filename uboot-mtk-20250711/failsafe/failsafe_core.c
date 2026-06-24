@@ -117,7 +117,7 @@ int start_web_failsafe(void)
 #ifdef CONFIG_WEBUI_FAILSAFE_ENV
 	env_register_handlers(inst);
 #endif
-#ifdef CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP
+#if defined(CONFIG_WEBUI_FAILSAFE_UI_BOOTSTRAP) || defined(CONFIG_WEBUI_FAILSAFE_UI_LEBOOT)
 	theme_register_handlers(inst);
 #endif
 #ifdef CONFIG_WEBUI_FAILSAFE_UBI
