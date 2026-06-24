@@ -53,15 +53,18 @@ jobs:
           set -euo pipefail
           cd bl-mt798x-dhcpd
           
-          # Run build command for the specific board
-          make BOARD=comfast_cf-wr632ax VERSION=SP2 VARIANT=ubootmod FSTHEME=leboot
-
-          # Get LEBOOT version dynamically from main.js
+          # Get LEBOOT version dynamically from main.js first
           leboot_version=$(grep -oE "LEBOOT v[0-9.]+" uboot-mtk-20250711/failsafe/embedded/fsdata_leboot/main.js | head -n 1 | tr -d '\r\n')
           [ -z "$leboot_version" ] && { echo "ERROR: LEBOOT version not found in main.js"; exit 1; }
           leboot_tag=$(echo "$leboot_version" | tr ' ' '-' | tr -d '\r\n')
 
-          echo "FILE_DATE=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_ENV
+          FILE_DATE=$(date +"%Y.%m.%d-%H%M")
+          export BUILD_STRING="${FILE_DATE}-${leboot_tag}"
+
+          # Run build command for the specific board
+          make BOARD=comfast_cf-wr632ax VERSION=SP2 VARIANT=ubootmod FSTHEME=leboot
+
+          echo "FILE_DATE=$FILE_DATE" >> $GITHUB_ENV
           echo "LEBOOT_VER=$leboot_version" >> $GITHUB_ENV
           echo "LEBOOT_TAG=$leboot_tag" >> $GITHUB_ENV
           echo "status=success" >> $GITHUB_OUTPUT
